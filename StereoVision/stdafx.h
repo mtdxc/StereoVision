@@ -10,7 +10,7 @@
 #endif
 
 #include "targetver.h"
-
+#define POINTER_64 __ptr64
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS      // 某些 CString 构造函数将是显式的
 
 // 关闭 MFC 对某些常见但经常可放心忽略的警告消息的隐藏
@@ -32,12 +32,6 @@
 #endif // _AFX_NO_AFXCMN_SUPPORT
 
 #include <afxcontrolbars.h>     // 功能区和控件条的 MFC 支持
-
-
-
-
-
-
 
 
 
