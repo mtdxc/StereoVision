@@ -211,9 +211,9 @@ private:
 	int m_frameHeight;					// 帧高
 	int m_numberOfDisparies;			// 视差变化范围
 
-    int m_nViewWidth;                   // 视场宽度
-    int m_nViewHeight;                  // 视场高度
-    int m_nViewDepth;                   // 视场深度
+	int m_nViewWidth;                   // 视场宽度
+	int m_nViewHeight;                  // 视场高度
+	int m_nViewDepth;                   // 视场深度
 
 };
 

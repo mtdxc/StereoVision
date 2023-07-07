@@ -23,7 +23,6 @@ private:
 	void init();
 
 	cv::FileStorage fs;
-	static ParamServer* _instance;
 
 	int image_width;
 	int image_height;

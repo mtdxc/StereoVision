@@ -279,9 +279,9 @@ int StereoCalib::detectCorners(cv::Mat& img1, cv::Mat& img2, CornerDatas& corner
 		showText(img2, text);
 
 	if (stereoMode)
-		return (found1 && found2) ? 1 : 0;
+		return (found1 && found2);
 	else
-		return found1 ? 1 : 0;
+		return found1;
 }
 
 
@@ -559,8 +559,7 @@ int StereoCalib::calibrateStereoCamera(CornerDatas& cornerDatas, StereoParams& s
 		stereoParams.essential,
 		stereoParams.foundational,
 		cv::TermCriteria(cv::TermCriteria::COUNT+cv::TermCriteria::EPS, 30, 1e-6),
-		stereoParams.flags +
-		cv::CALIB_FIX_K3 + cv::CALIB_FIX_K4 + cv::CALIB_FIX_K5
+		stereoParams.flags + cv::CALIB_FIX_K3 + cv::CALIB_FIX_K4 + cv::CALIB_FIX_K5
 		);
 
 	return 1;

@@ -1,16 +1,13 @@
 #include "StdAfx.h"
 #include "ParamServer.h"
 
-
-ParamServer* ParamServer::_instance = NULL;
-
-
 ParamServer::ParamServer() 
 {
 	init();
 }
 
 ParamServer* ParamServer::instance() {
+	static ParamServer* _instance = NULL;
 	if (_instance == NULL) {
 		_instance = new ParamServer();
 	}

@@ -7,7 +7,6 @@
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CV_INLINE RECT NormalizeRect( RECT r );
 CV_INLINE RECT NormalizeRect( RECT r )
 {
 	int t;
@@ -29,14 +28,12 @@ CV_INLINE RECT NormalizeRect( RECT r )
 	return r;
 }
 
-CV_INLINE CvRect RectToCvRect( RECT sr );
 CV_INLINE CvRect RectToCvRect( RECT sr )
 {
 	sr = NormalizeRect( sr );
 	return cvRect( sr.left, sr.top, sr.right - sr.left, sr.bottom - sr.top );
 }
 
-CV_INLINE RECT CvRectToRect( CvRect sr );
 CV_INLINE RECT CvRectToRect( CvRect sr )
 {
 	RECT dr;
@@ -48,7 +45,6 @@ CV_INLINE RECT CvRectToRect( CvRect sr )
 	return dr;
 }
 
-CV_INLINE IplROI RectToROI( RECT r );
 CV_INLINE IplROI RectToROI( RECT r )
 {
 	IplROI roi;
@@ -242,7 +238,7 @@ void  CvvImage::Show( const char* window )
 		cvShowImage( window, m_img );
 }
 
-
+#if defined WIN32 || defined _WIN32
 void  CvvImage::Show( HDC dc, int x, int y, int w, int h, int from_x, int from_y )
 {
 	if( m_img && m_img->depth == IPL_DEPTH_8U )
@@ -306,7 +302,7 @@ void  CvvImage::DrawToHDC( HDC hDCDst, RECT* pDstRect )
 			m_img->imageData, bmi, DIB_RGB_COLORS, SRCCOPY );
 	}
 }
-
+#endif
 
 void  CvvImage::Fill( int color )
 {

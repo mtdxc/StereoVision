@@ -20,7 +20,7 @@
 #include "opencv2/core/core_c.h"
 
 using namespace std;
-
+// ˫ĿУ׼
 class StereoCalib
 {
 public:

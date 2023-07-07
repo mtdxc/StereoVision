@@ -918,8 +918,7 @@ void CStereoVisionDlg::OnBnClk_DoCameraCalib()
 			}
 			else
 			{
-				LPCTSTR errMsg = _T("角点坐标数据读入失败！\n  --确认当前文件夹中包含 CornerData.yml 文件！ \n 或者\n  --执行棋盘角点检测。");
-				throw errMsg;
+				throw _T("角点坐标数据读入失败！\n  --确认当前文件夹中包含 CornerData.yml 文件！ \n 或者\n  --执行棋盘角点检测。");
 			}
 		}
 		// *** 从摄像头或本地图片检测棋盘角点
@@ -947,15 +946,14 @@ void CStereoVisionDlg::OnBnClk_DoCameraCalib()
 
 				if (img0Files.empty())	// 判断是否获得图片
 				{
-					LPCTSTR errMsg = _T("没有选择到有效的图像文件，请重新选择!");
-					throw errMsg;
+					throw _T("没有选择到有效的图像文件，请重新选择!");
 				}
 
 				img0_file = img0Files[0];
 				img0 = cv::imread(img0_file);
 				imageSize = img0.size();
 
-				if (false == img1Files.empty())
+				if (img1Files.size())
 				{
 					optCalib.numberBoards = MIN(optCalib.numberBoards, MIN(img0Files.size(), img1Files.size()));
 				}
@@ -987,8 +985,7 @@ void CStereoVisionDlg::OnBnClk_DoCameraCalib()
 				{
 					if (msg.message == WM_QUIT)
 					{
-						LPCTSTR errMsg = _T("手动退出双目标定!");
-						throw errMsg;
+						throw _T("手动退出双目标定!");
 					}
 
 					//// 需要 #include "Strsafe.h"
@@ -1069,8 +1066,7 @@ void CStereoVisionDlg::OnBnClk_DoCameraCalib()
 
 			if (nFoundBoard < 4)
 			{
-				LPCTSTR errMsg = _T("检测成功的棋盘图像数小于4个，退出双目标定!");
-				throw errMsg;
+				throw _T("检测成功的棋盘图像数小于4个，退出双目标定!");
 			}
 			else if (nFoundBoard != optCalib.numberBoards)
 			{
@@ -1096,8 +1092,7 @@ void CStereoVisionDlg::OnBnClk_DoCameraCalib()
 			filePath.AppendFormat("cameraParams_left.yml");
 			if (0 == m_stereoCalibrator.loadCameraParams(filePath.GetBuffer(0), stereoParams.cameraParams1))
 			{
-				LPCTSTR errMsg = _T("读入摄像头内参失败，找不到 cameraParams_left.yml 文件!");
-				throw errMsg;
+				throw _T("读入摄像头内参失败，找不到 cameraParams_left.yml 文件!");
 			}
 
 			if (optCalib.doStereoCalib)
@@ -1106,8 +1101,7 @@ void CStereoVisionDlg::OnBnClk_DoCameraCalib()
 				filePath.AppendFormat("cameraParams_right.yml");
 				if (0 == m_stereoCalibrator.loadCameraParams(filePath.GetBuffer(0), stereoParams.cameraParams2))
 				{
-					LPCTSTR errMsg = _T("读入摄像头内参失败，找不到 cameraParams_right.yml 文件!");
-					throw errMsg;
+					throw _T("读入摄像头内参失败，找不到 cameraParams_right.yml 文件!");
 				}
 			}
 
@@ -1342,7 +1336,6 @@ bool CStereoVisionDlg::DoParseOptionsOfStereoMatch(OptionStereoMatch& opt)
 	// 确认是否生成三维点云
 	m_pCheck = (CButton*)GetDlgItem(IDC_CHK_ProjTo3D);
 	opt.generatePointCloud = m_pCheck->GetCheck() > 0;
-
 	return true;
 }
 
@@ -1451,7 +1444,6 @@ void CStereoVisionDlg::OnBnClk_DoCompDisp()
 	const char* xml_filename = NULL;
 
 	cv::Mat img1, img2, img1p, img2p, disp, disp8u, pointCloud;
-	LPCTSTR errMsg;
 
 	try
 	{
@@ -1478,8 +1470,7 @@ void CStereoVisionDlg::OnBnClk_DoCompDisp()
 
 			if (imgFiles1.empty() || imgFiles2.empty())
 			{
-				errMsg = _T("没有选中有效的图像文件!");
-				throw errMsg;
+				throw _T("没有选中有效的图像文件!");
 			}
 
 			img1_filename = imgFiles1[0];
@@ -1508,8 +1499,7 @@ void CStereoVisionDlg::OnBnClk_DoCompDisp()
 				);
 			if (xmlFiles.empty())
 			{
-				errMsg = _T("没有选中有效的摄像头定标参数文件!");
-				throw errMsg;
+				throw _T("没有选中有效的摄像头定标参数文件!");
 			}
 			xmlPath = xmlFiles[0];			// 获取xml文件路径
 			xml_filename = xmlPath;
@@ -1519,17 +1509,14 @@ void CStereoVisionDlg::OnBnClk_DoCompDisp()
 			{
 			case 0:
 			case -99:
-				errMsg = _T("读取摄像头定标参数文件失败，请重新选择!");
-				throw errMsg;
+				throw _T("读取摄像头定标参数文件失败，请重新选择!");
 			case -1:
-				errMsg = _T("定标参数的图像尺寸与当前配置的图像尺寸不一致，请重新选择!");
-				throw errMsg;
+				throw _T("定标参数的图像尺寸与当前配置的图像尺寸不一致，请重新选择!");
 			case -2:
 				if (optMatch.generatePointCloud)
 				{
 					optMatch.generatePointCloud = false;
-					errMsg = _T("定标文件对应的校正方法不是 BOUGUET 方法，无法生成三维点云!");
-					throw errMsg;
+					throw _T("定标文件对应的校正方法不是 BOUGUET 方法，无法生成三维点云!");
 				}
 				break;
 			}
