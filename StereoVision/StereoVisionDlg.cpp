@@ -524,8 +524,9 @@ void CStereoVisionDlg::OnBnClkRunCam()
 			AfxMessageBox(_T("打开左摄像头失败."));
 			return;
 		}
-		lfCam.set(CV_CAP_PROP_FRAME_WIDTH, m_nImageWidth);
-		lfCam.set(CV_CAP_PROP_FRAME_HEIGHT, m_nImageHeight);
+		
+		lfCam.set(CAP_PROP_FRAME_WIDTH, m_nImageWidth);
+		lfCam.set(CAP_PROP_FRAME_HEIGHT, m_nImageHeight);
 	}
 	if (m_nCamCount > 1)
 	{
@@ -541,8 +542,8 @@ void CStereoVisionDlg::OnBnClkRunCam()
 			AfxMessageBox(_T("打开右摄像头失败."));
 			return;
 		}
-		riCam.set(CV_CAP_PROP_FRAME_WIDTH, m_nImageWidth);
-		riCam.set(CV_CAP_PROP_FRAME_HEIGHT, m_nImageHeight);
+		riCam.set(CAP_PROP_FRAME_WIDTH, m_nImageWidth);
+		riCam.set(CAP_PROP_FRAME_HEIGHT, m_nImageHeight);
 	}
 
 	// 使部分按钮生效
@@ -712,8 +713,9 @@ void createLableImage(const char* path, int dx, int dy, int chess_size = 500)
 		return;
 	}
 	//---生成标定图
-	IplImage* img = cvCreateImage(cvSize(chess_size*dy, chess_size*dx), IPL_DEPTH_8U, 1);
-	cvZero(img);
+	cv::Mat img2(cvSize(chess_size*dy, chess_size*dx), IPL_DEPTH_8U, 1);
+	IplImage img = cvIplImage(img2);
+	cvZero(&img);
 	int flag = 0;
 	for (int i = 0; i < dx; i++)
 		for (int j = 0; j < dy; j++)
@@ -723,13 +725,12 @@ void createLableImage(const char* path, int dx, int dy, int chess_size = 500)
 			{
 				for (int m = i * chess_size; m < (i + 1)*chess_size; m++)
 					for (int n = j * chess_size; n < (j + 1)*chess_size; n++)
-						*(img->imageData + m * img->widthStep + n) = 255;
+						*(img.imageData + m * img.widthStep + n) = 255;
 			}
 		}
-	cvSaveImage(path, img);
+	imwrite(path, img2);
 	// 生成的棋盘格图保存在该工程目录下
-	cvNamedWindow("cab", 1);
-	cvShowImage("cab", img);
+	imshow("cab", img2);
 }
 
 /*----------------------------
@@ -793,17 +794,17 @@ bool CStereoVisionDlg::DoParseOptionsOfCameraCalib(OptionCameraCalib& opt)
 {
 	// 摄像头定标变量初始化
 	opt.squareSize = 30.0f;
-	opt.flagCameraCalib = CV_CALIB_FIX_K3;
+	opt.flagCameraCalib = CALIB_FIX_K3;
 	opt.flagStereoCalib = 0;
 	opt.numberFrameSkip = 30;
 	opt.doStereoCalib = true;
 
 	UINT nCheckIDs[9] = { IDC_CHK1FPP, IDC_CHK2UIG, IDC_CHK3FAR, IDC_CHK4ZTD,
 		IDC_CHK1FPP2, IDC_CHK2UIG2, IDC_CHK3FAR2, IDC_CHK4SFL, IDC_CHK5FI };
-	int nFlagDefs1[4] = { CV_CALIB_FIX_PRINCIPAL_POINT, CV_CALIB_USE_INTRINSIC_GUESS,
-		CV_CALIB_FIX_ASPECT_RATIO, CV_CALIB_ZERO_TANGENT_DIST };
-	int nFlagDefs2[5] = { CV_CALIB_FIX_PRINCIPAL_POINT, CV_CALIB_USE_INTRINSIC_GUESS,
-		CV_CALIB_FIX_ASPECT_RATIO, CV_CALIB_SAME_FOCAL_LENGTH, CV_CALIB_FIX_INTRINSIC };
+	int nFlagDefs1[4] = { CALIB_FIX_PRINCIPAL_POINT, CALIB_USE_INTRINSIC_GUESS,
+		CALIB_FIX_ASPECT_RATIO, CALIB_ZERO_TANGENT_DIST };
+	int nFlagDefs2[5] = { CALIB_FIX_PRINCIPAL_POINT, CALIB_USE_INTRINSIC_GUESS,
+		CALIB_FIX_ASPECT_RATIO, CALIB_SAME_FOCAL_LENGTH, CALIB_FIX_INTRINSIC };
 
 	// 读入MFC界面的棋盘参数设定
 	bool res = UpdateData(TRUE);
@@ -1351,15 +1352,14 @@ bool CStereoVisionDlg::DoParseOptionsOfStereoMatch(OptionStereoMatch& opt)
 void CStereoVisionDlg::DoUpdateStateBM()
 {
 	UpdateData(TRUE);
-	m_stereoMatcher.m_BM.state->preFilterCap = m_nPreFiltCap;
-	m_stereoMatcher.m_BM.state->SADWindowSize = m_nSADWinSiz > 0 ? m_nSADWinSiz : 9;
-	m_stereoMatcher.m_BM.state->minDisparity = m_nMinDisp;
-	m_stereoMatcher.m_BM.state->numberOfDisparities = m_nNumDisp;
-	m_stereoMatcher.m_BM.state->textureThreshold = m_nTextThres;
-	m_stereoMatcher.m_BM.state->uniquenessRatio = m_nUniqRatio;
-	m_stereoMatcher.m_BM.state->speckleWindowSize = m_nSpeckWinSiz;
-	m_stereoMatcher.m_BM.state->speckleRange = m_nSpeckRange;
-
+	m_stereoMatcher.m_BM->setPreFilterCap(m_nPreFiltCap);
+	//m_stereoMatcher.m_BM.state->SADWindowSize = m_nSADWinSiz > 0 ? m_nSADWinSiz : 9;
+	m_stereoMatcher.m_BM->setMinDisparity(m_nMinDisp);
+	m_stereoMatcher.m_BM->setNumDisparities(m_nNumDisp);
+	m_stereoMatcher.m_BM->setTextureThreshold(m_nTextThres);
+	m_stereoMatcher.m_BM->setUniquenessRatio(m_nUniqRatio);
+	m_stereoMatcher.m_BM->setSpeckleWindowSize(m_nSpeckWinSiz);
+	m_stereoMatcher.m_BM->setSpeckleRange(m_nSpeckRange);
 }
 
 
@@ -1375,16 +1375,16 @@ void CStereoVisionDlg::DoUpdateStateBM()
 void CStereoVisionDlg::DoUpdateStateSGBM(int imgChannels)
 {
 	UpdateData(TRUE);
-	m_stereoMatcher.m_SGBM.preFilterCap = m_nPreFiltCap;
-	m_stereoMatcher.m_SGBM.SADWindowSize = m_nSADWinSiz > 0 ? m_nSADWinSiz : 3;
-	m_stereoMatcher.m_SGBM.P1 = 8 * imgChannels * m_nSADWinSiz * m_nSADWinSiz;
-	m_stereoMatcher.m_SGBM.P2 = 32 * imgChannels * m_nSADWinSiz * m_nSADWinSiz;
-	m_stereoMatcher.m_SGBM.minDisparity = m_nMinDisp;
-	m_stereoMatcher.m_SGBM.numberOfDisparities = m_nNumDisp;
-	m_stereoMatcher.m_SGBM.uniquenessRatio = m_nUniqRatio;
-	m_stereoMatcher.m_SGBM.speckleWindowSize = m_nSpeckWinSiz;
-	m_stereoMatcher.m_SGBM.speckleRange = m_nSpeckRange;
-	m_stereoMatcher.m_SGBM.fullDP = m_bModeHH;
+	m_stereoMatcher.m_SGBM->setPreFilterCap(m_nPreFiltCap);
+	//m_stereoMatcher.m_SGBM.SADWindowSize = m_nSADWinSiz > 0 ? m_nSADWinSiz : 3;
+	m_stereoMatcher.m_SGBM->setP1(8 * imgChannels * m_nSADWinSiz * m_nSADWinSiz);
+	m_stereoMatcher.m_SGBM->setP2(32 * imgChannels * m_nSADWinSiz * m_nSADWinSiz);
+	m_stereoMatcher.m_SGBM->setMinDisparity(m_nMinDisp);
+	m_stereoMatcher.m_SGBM->setNumDisparities(m_nNumDisp);
+	m_stereoMatcher.m_SGBM->setUniquenessRatio(m_nUniqRatio);
+	m_stereoMatcher.m_SGBM->setSpeckleWindowSize(m_nSpeckWinSiz);
+	m_stereoMatcher.m_SGBM->setSpeckleRange(m_nSpeckRange);
+	//m_stereoMatcher.m_SGBM.fullDP = m_bModeHH;
 }
 
 
@@ -1399,8 +1399,10 @@ void CStereoVisionDlg::DoUpdateStateSGBM(int imgChannels)
 void CStereoVisionDlg::DoUpdateStateVAR()
 {
 	UpdateData(TRUE);
+#ifdef HAS_VAR
 	m_stereoMatcher.m_VAR.minDisp = m_nMinDisp;
 	m_stereoMatcher.m_VAR.maxDisp = m_nNumDisp + m_nMinDisp;
+#endif
 }
 
 
@@ -1527,8 +1529,8 @@ void CStereoVisionDlg::OnBnClk_DoCompDisp()
 
 		//////////////////////////////////////////////////////////////////////////
 		// 开始计算图像视差
-		m_stereoMatcher.m_BM.state->disp12MaxDiff = m_nDisp12MaxDiff;
-		m_stereoMatcher.m_SGBM.disp12MaxDiff = m_nDisp12MaxDiff;
+		m_stereoMatcher.m_BM->setDisp12MaxDiff(m_nDisp12MaxDiff);
+		m_stereoMatcher.m_SGBM->setDisp12MaxDiff(m_nDisp12MaxDiff);
 
 		int frameCount = 0;	//图像计数
 		PointCloudAnalyzer pointCloudAnalyzer;
@@ -1797,7 +1799,7 @@ void CStereoVisionDlg::OnBnClkDefaultStereoParam()
 	{
 		m_nMinDisp = -64;
 		m_nNumDisp = 64;
-
+#ifdef HAS_VAR
 		m_stereoMatcher.m_VAR.levels = 3;                                 // ignored with USE_AUTO_PARAMS
 		m_stereoMatcher.m_VAR.pyrScale = 0.5;                             // ignored with USE_AUTO_PARAMS
 		m_stereoMatcher.m_VAR.nIt = 25;
@@ -1808,6 +1810,7 @@ void CStereoVisionDlg::OnBnClkDefaultStereoParam()
 		m_stereoMatcher.m_VAR.penalization = m_stereoMatcher.m_VAR.PENALIZATION_TICHONOV;   // ignored with USE_AUTO_PARAMS
 		m_stereoMatcher.m_VAR.cycle = m_stereoMatcher.m_VAR.CYCLE_V;                        // ignored with USE_AUTO_PARAMS
 		m_stereoMatcher.m_VAR.flags = m_stereoMatcher.m_VAR.USE_SMART_ID | m_stereoMatcher.m_VAR.USE_AUTO_PARAMS | m_stereoMatcher.m_VAR.USE_INITIAL_DISPARITY | m_stereoMatcher.m_VAR.USE_MEDIAN_FILTERING;
+#endif
 	}
 	UpdateData(FALSE);
 }
@@ -2274,17 +2277,140 @@ void CStereoVisionDlg::F_ShowImage(Mat& src, Mat& des, UINT ID)
 		resize(src, desRoi, desRoi.size());
 	}
 
-	CDC* pDC = GetDlgItem(ID)->GetDC();		// 获得显示控件的 DC
-	HDC hDC = pDC->GetSafeHdc();				// 获取 HDC(设备句柄) 来进行绘图操作
+	CWnd* pID = GetDlgItem(ID);
+	CDC* pDC = pID->GetDC();		// 获得显示控件的 DC
+	HDC hDC = pDC->GetSafeHdc();	// 获取 HDC(设备句柄) 来进行绘图操作
 	CRect rect;
-	GetDlgItem(ID)->GetClientRect(&rect);	// 获取控件尺寸位置
+	pID->GetClientRect(&rect);	// 获取控件尺寸位置
+	// @todo show to dc
+#ifndef RC_OPENCV_2_1_0
 	CvvImage cimg;
 	IplImage cpy = des;
 	cimg.CopyOf(&cpy);						// 复制图片
 	cimg.DrawToHDC(hDC, &rect);				// 将图片绘制到显示控件的指定区域内
+#else
+	Show2DC(des, hDC, rect.Height(), rect.Width(), 0, 0);
+#endif
 	ReleaseDC(pDC);
 }
 
+BOOL ConvertMat2CImage(const cv::Mat& src_img, CImage& dst_img)
+{
+	if (!src_img.data)
+	{
+		return FALSE;
+	}
+	int width = src_img.cols;			//获取输入图像的宽度
+	int height = src_img.rows;			//获取输入图像的高度
+	int channels = src_img.channels();	//获取输入图像的
+	int src_type = src_img.type();
+
+	dst_img.Destroy();
+
+	switch (src_type)
+	{
+	case CV_8UC1:
+	{
+		dst_img.Create(width, -1 * height, 8 * channels);
+		unsigned char* dst_data = static_cast<unsigned char*>(dst_img.GetBits());
+		int step_size = dst_img.GetPitch();		//获取位图行与行之间相差的字节数
+		unsigned char* src_data = nullptr;
+		for (int i = 0; i < height; i++)
+		{
+			src_data = const_cast<unsigned char*>(src_img.ptr<unsigned char>(i));	//获取行指针
+			for (int j = 0; j < width; j++)
+			{
+				if (step_size > 0)
+				{
+					*(dst_data + step_size * i + j) = *src_data++;
+				}	//像素的排列方式是自左上开始的
+				else
+				{
+					*(dst_data + step_size * i - j) = *src_data++;
+				}
+			}
+		}
+		break;
+	}
+	case CV_8UC3:
+	{
+		dst_img.Create(width, height, 8 * channels);
+		unsigned char* dst_data = static_cast<unsigned char*>(dst_img.GetBits());
+		int step_size = dst_img.GetPitch();		//获取位图行与行之间相差的字节数
+		unsigned char* src_data = nullptr;
+
+		for (int i = 0; i < height; i++)
+		{
+			src_data = const_cast<unsigned char*>(src_img.ptr<unsigned char>(i));	//获取行指针
+			for (int j = 0; j < width; j++)
+			{
+				for (int k = 0; k < 3; k++)
+				{
+					*(dst_data + step_size * i + j * 3 + k) = src_data[3 * j + k];
+				}
+			}
+		}
+		break;
+	}
+	default:
+		//MessageBox("输入的图像类型出错");
+		return FALSE;
+		break;
+	}
+
+	return TRUE;
+}
+
+BOOL GetFixMat(const cv::Mat& src_img, cv::Mat& dst_img, unsigned int dc_heigh, unsigned int dc_width)
+{
+	if (!src_img.data)
+	{
+		return FALSE;
+	}
+	unsigned int img_rows(src_img.rows);
+	unsigned int img_cols(src_img.cols);
+	unsigned int fix_heigh(std::min(img_rows, dc_heigh));
+	unsigned int fix_width(std::min(img_cols, dc_width));
+
+	float ratio_w = static_cast<float>(fix_width) / static_cast<float>(img_cols);
+	float ratio_h = static_cast<float>(fix_heigh) / static_cast<float>(img_rows);
+	float ratio = std::min(ratio_w, ratio_h);
+
+	int show_width = static_cast<unsigned int>(ratio * img_cols);
+	int show_height = static_cast<unsigned int>(ratio * img_rows);
+
+	cv::resize(src_img, dst_img, cv::Size(show_width, show_height), (0.0), (0.0), cv::INTER_LINEAR);
+
+	return TRUE;
+}
+//************************************
+// 函数名称:    Show2DC
+// 访问权限:    public static 
+// 创建日期:    2016/10/26
+// 创 建 人:	
+// 函数说明:    将Mat数据类型的图像像是在DC指向的窗口上
+// 函数参数:    const cv::Mat & img			输入图像数据
+// 函数参数:    HDC dst_hdc				输出图像数据
+// 函数参数:    const unsigned int dc_heigh		DC所指向窗口的高度
+// 函数参数:    const unsigned int dc_width		DC所指向窗口的宽度
+// 返 回 值:    BOOL
+//************************************
+BOOL CStereoVisionDlg::Show2DC(const cv::Mat& img, HDC dst_hdc, const unsigned int dc_heigh, const unsigned int dc_width, int move_x, int move_y)
+{
+	if (!img.data)
+	{
+		return FALSE;
+	}
+	CImage dst_img;
+	cv::Mat temp;	//定义中间变量
+	GetFixMat(img, temp, dc_heigh, dc_width);	//图像的几何大小变换
+	ConvertMat2CImage(temp, dst_img);			//图像转换
+	int offsetx = (dc_width - temp.cols) / 2 + move_x;			//调整偏移量
+	int offsety = (dc_heigh - temp.rows) / 2 + move_y;
+	BOOL temp1 = dst_img.Draw(dst_hdc, offsetx, offsety, dst_img.GetWidth(), dst_img.GetHeight());	//图像显示
+
+	return TRUE;
+}
 
 /*----------------------------
  * 功能 : 保存当前的立体匹配结果至本地

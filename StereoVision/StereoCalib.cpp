@@ -417,7 +417,7 @@ int StereoCalib::saveCameraParams(const CameraParams& cameraParams, const char* 
 		time_t rawtime; 
 		time(&rawtime);
 		fs << "calibrationDate" << asctime(localtime(&rawtime));
-
+#ifndef RC_OPENCV_2_1_0
 		char flagText[1024];
 		sprintf_s( flagText, "flags: %s%s%s%s%s",
 			cameraParams.flags & cv::CALIB_FIX_K3 ? "fix_k3" : "",
@@ -426,7 +426,7 @@ int StereoCalib::saveCameraParams(const CameraParams& cameraParams, const char* 
 			cameraParams.flags & cv::CALIB_FIX_PRINCIPAL_POINT ? " + fix_principal_point" : "",
 			cameraParams.flags & cv::CALIB_ZERO_TANGENT_DIST ? " + zero_tangent_dist" : "" );
 		cvWriteComment(*fs, flagText, 0);
-		
+#endif		
 		fs << "flags"					<< cameraParams.flags;
 
 		fs << "imageSize" << "[" << cameraParams.imageSize.width << cameraParams.imageSize.height << "]";
@@ -558,8 +558,8 @@ int StereoCalib::calibrateStereoCamera(CornerDatas& cornerDatas, StereoParams& s
 		stereoParams.translation,
 		stereoParams.essential,
 		stereoParams.foundational,
-		cv::TermCriteria(cv::TermCriteria::COUNT+cv::TermCriteria::EPS, 30, 1e-6),
-		stereoParams.flags + cv::CALIB_FIX_K3 + cv::CALIB_FIX_K4 + cv::CALIB_FIX_K5
+		stereoParams.flags + cv::CALIB_FIX_K3 + cv::CALIB_FIX_K4 + cv::CALIB_FIX_K5,
+		cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 1e-6)
 		);
 
 	return 1;
@@ -818,7 +818,7 @@ int StereoCalib::saveCalibrationDatas(const char* filename, RECTIFYMETHOD method
 
 		fs << "num_boards"	<< cornerDatas.nImages;
 		fs << "imageSize" << "[" << cornerDatas.imageSize.width << cornerDatas.imageSize.height << "]";
-
+#ifndef RC_OPENCV_2_1_0
 		char flagText[1024];
 		sprintf_s( flagText, "flags: %s%s%s%s%s",
 			stereoParams.flags & cv::CALIB_USE_INTRINSIC_GUESS ? "+ use_intrinsic_guess" : "",
@@ -828,7 +828,7 @@ int StereoCalib::saveCalibrationDatas(const char* filename, RECTIFYMETHOD method
 			stereoParams.flags & cv::CALIB_SAME_FOCAL_LENGTH ? " + same_focal_length" : "" );
 
 		cvWriteComment(*fs, flagText, 0);
-
+#endif
 		fs << "stereoCalibrateFlags"		<< stereoParams.flags;
 		fs << "leftCameraMatrix"			<< stereoParams.cameraParams1.cameraMatrix;
 		fs << "leftDistortCoefficients"		<< stereoParams.cameraParams1.distortionCoefficients;

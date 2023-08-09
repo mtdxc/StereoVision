@@ -16,7 +16,7 @@
 #include "opencv2/imgproc/types_c.h"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/calib3d/calib3d.hpp"
-#include "opencv2/contrib/contrib.hpp"
+//#include "opencv2/contrib/contrib.hpp"
 
 using namespace std;
 
@@ -172,9 +172,11 @@ public:
 	/***
 	 *	公开变量
 	 */	
-	cv::StereoBM		m_BM;				// 立体匹配 BM 方法
-	cv::StereoSGBM		m_SGBM;				// 立体匹配 SGBM 方法
+	cv::Ptr<cv::StereoBM>		m_BM;				// 立体匹配 BM 方法
+	cv::Ptr<cv::StereoSGBM>		m_SGBM;				// 立体匹配 SGBM 方法
+#ifdef HAS_VAR
 	cv::StereoVar		m_VAR;				// 立体匹配 VAR 方法
+#endif
 	double				m_FL;				// 左摄像机校正后的焦距值
 
 private:

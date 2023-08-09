@@ -66,8 +66,12 @@
 #define cvLIB(name) "opencv_" name CV_VERSION_ID
 #endif
 
+#if 1
+#pragma comment( lib, cvLIB("world") )
+#else
 #pragma comment( lib, cvLIB("core") )
 #pragma comment( lib, cvLIB("imgproc") )
 #pragma comment( lib, cvLIB("highgui") )
 #pragma comment( lib, cvLIB("calib3d") )
 #pragma comment( lib, cvLIB("contrib") )
+#endif

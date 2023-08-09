@@ -76,7 +76,7 @@ void PointCloudAnalyzer::imageDenoising( cv::Mat& img, int iters )
 {
 	cv::Mat pyr = cv::Mat(img.cols/2, img.rows/2, img.type());
 
-	IplImage iplImg = img;
+	IplImage iplImg = cvIplImage(img);
 	cvSmooth(&iplImg, &iplImg, CV_GAUSSIAN, 3, 3);	// 平滑滤波
 
 	pyrDown(img, pyr);	// 对平滑后的图像进行二次缩放

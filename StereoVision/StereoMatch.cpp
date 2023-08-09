@@ -5,6 +5,8 @@
 StereoMatch::StereoMatch(void)
 	: m_frameWidth(0), m_frameHeight(0), m_numberOfDisparies(0)
 {
+	m_BM = cv::StereoBM::create();
+	m_SGBM = cv::StereoSGBM::create();
 }
 
 StereoMatch::~StereoMatch(void)
@@ -93,8 +95,8 @@ int StereoMatch::loadCalibData(const char* xmlFilePath)
 		m_Calib_Mat_Mask_Roi = cv::Mat::zeros(m_frameHeight, m_frameWidth, CV_8UC1);
 		cv::rectangle(m_Calib_Mat_Mask_Roi, m_Calib_Roi_L, cv::Scalar(255), -1);
 
-		m_BM.state->roi1 = m_Calib_Roi_L;
-		m_BM.state->roi2 = m_Calib_Roi_R;
+		m_BM->setROI1(m_Calib_Roi_L);
+		m_BM->setROI2(m_Calib_Roi_R);
 
 		m_Calib_Data_Loaded = true;
 
@@ -165,18 +167,19 @@ int StereoMatch::bmMatch(cv::Mat& frameLeft, cv::Mat& frameRight, cv::Mat& dispa
 
 	// 对左右视图的左边进行边界延拓，以获取与原始视图相同大小的有效视差区域
 	cv::Mat img1border, img2border;
-	if (m_numberOfDisparies != m_BM.state->numberOfDisparities)
-		m_numberOfDisparies = m_BM.state->numberOfDisparities;
-	copyMakeBorder(img1remap, img1border, 0, 0, m_BM.state->numberOfDisparities, 0, IPL_BORDER_REPLICATE);
-	copyMakeBorder(img2remap, img2border, 0, 0, m_BM.state->numberOfDisparities, 0, IPL_BORDER_REPLICATE);
+	int numberOfDisparities = m_BM->getNumDisparities();
+	if (m_numberOfDisparies != numberOfDisparities)
+		m_numberOfDisparies = numberOfDisparities;
+	copyMakeBorder(img1remap, img1border, 0, 0, numberOfDisparities, 0, IPL_BORDER_REPLICATE);
+	copyMakeBorder(img2remap, img2border, 0, 0, numberOfDisparities, 0, IPL_BORDER_REPLICATE);
 
 	// 计算视差
 	cv::Mat dispBorder;
-	m_BM(img1border, img2border, dispBorder);
+	m_BM->compute(img1border, img2border, dispBorder);
 
 	// 截取与原始画面对应的视差区域（舍去加宽的部分）
 	cv::Mat disp;
-	disp = dispBorder.colRange(m_BM.state->numberOfDisparities, img1border.cols);	
+	disp = dispBorder.colRange(numberOfDisparities, img1border.cols);	
 	disp.copyTo(disparity, m_Calib_Mat_Mask_Roi);
 
 	// 输出处理后的图像
@@ -243,20 +246,21 @@ int StereoMatch::sgbmMatch(cv::Mat& frameLeft, cv::Mat& frameRight, cv::Mat& dis
 		img2remap = img2proc;
 	}
 
+	int numberOfDisparities = m_SGBM->getNumDisparities();
 	// 对左右视图的左边进行边界延拓，以获取与原始视图相同大小的有效视差区域
 	cv::Mat img1border, img2border;
-	if (m_numberOfDisparies != m_SGBM.numberOfDisparities)
-		m_numberOfDisparies = m_SGBM.numberOfDisparities;
-	copyMakeBorder(img1remap, img1border, 0, 0, m_SGBM.numberOfDisparities, 0, IPL_BORDER_REPLICATE);
-	copyMakeBorder(img2remap, img2border, 0, 0, m_SGBM.numberOfDisparities, 0, IPL_BORDER_REPLICATE);
+	if (m_numberOfDisparies != numberOfDisparities)
+		m_numberOfDisparies = numberOfDisparities;
+	copyMakeBorder(img1remap, img1border, 0, 0, numberOfDisparities, 0, IPL_BORDER_REPLICATE);
+	copyMakeBorder(img2remap, img2border, 0, 0, numberOfDisparities, 0, IPL_BORDER_REPLICATE);
 
 	// 计算视差
 	cv::Mat dispBorder;
-	m_SGBM(img1border, img2border, dispBorder);
+	m_SGBM->compute(img1border, img2border, dispBorder);
 
 	// 截取与原始画面对应的视差区域（舍去加宽的部分）
 	cv::Mat disp;
-	disp = dispBorder.colRange(m_SGBM.numberOfDisparities, img1border.cols);	
+	disp = dispBorder.colRange(numberOfDisparities, img1border.cols);	
 	disp.copyTo(disparity, m_Calib_Mat_Mask_Roi);
 
 	// 输出处理后的图像
@@ -284,6 +288,7 @@ int StereoMatch::sgbmMatch(cv::Mat& frameLeft, cv::Mat& frameRight, cv::Mat& dis
  */
 int StereoMatch::varMatch(cv::Mat& frameLeft, cv::Mat& frameRight, cv::Mat& disparity, cv::Mat& imageLeft, cv::Mat& imageRight)
 {
+#ifdef HAS_VAR
 	// 输入检查
 	if (frameLeft.empty() || frameRight.empty())
 	{
@@ -337,7 +342,7 @@ int StereoMatch::varMatch(cv::Mat& frameLeft, cv::Mat& frameRight, cv::Mat& disp
 	imageRight = img2remap.clone();
 	rectangle(imageLeft, m_Calib_Roi_L, CV_RGB(0,255,0), 3);
 	rectangle(imageRight, m_Calib_Roi_R, CV_RGB(0,255,0), 3);
-
+#endif
 	return 1;
 }
 

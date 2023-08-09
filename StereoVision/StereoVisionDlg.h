@@ -187,7 +187,7 @@ private:
 	void F_Saveframe(Mat& lfImg, Mat&riImg, Mat& lfDisp);
 	void F_ShowImage(Mat& src, Mat& des, UINT ID);
 	void F_EdgeDetectCanny(Mat& src, Mat& des);
-
+	BOOL Show2DC(const Mat& img, HDC dst_hdc, const unsigned int dc_heigh, const unsigned int dc_width, int move_x, int move_y);
 
 	/***
 	 *	界面控件消息响应函数
